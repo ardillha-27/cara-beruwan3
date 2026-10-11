@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CuanBlitz - Real Disbursement Gateway API</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .gradient-bg { background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 50%, #06b6d4 100%); }
+        .pulse-glow { animation: pulseGlow 2s infinite; }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.8); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 h-full flex flex-col items-center justify-start overflow-x-hidden">
+
+    <header class="w-full max-w-md bg-slate-800/80 backdrop-blur border-b border-slate-700 p-4 sticky top-0 z-50 flex justify-between items-center shadow-md">
+        <div class="flex items-center space-x-2">
+            <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                <i class="fa-solid fa-bolt"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">CuanBlitz</h1>
+                <p class="text-xs text-slate-400">API Gateway Disbursement Real</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <!-- Admin Panel Toggle Button -->
+            <button onclick="toggleAdminModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 transition shadow">
+                <i class="fa-solid fa-gear"></i>
+                <span>Admin & API</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="w-full max-w-md p-4 flex-1 flex flex-col space-y-6 pb-24">
+        
+        <!-- Saldo Card -->
+        <div class="gradient-bg rounded-3xl p-6 text-white shadow-xl relative overflow-hidden pulse-glow">
+            <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <span class="text-xs uppercase tracking-wider text-blue-100 font-medium">Total Saldo Anda</span>
+                    <h2 id="displaySaldo" class="text-3xl font-extrabold mt-1 tracking-tight">Rp 2.500.000</h2>
+                </div>
+                <span class="bg-emerald-500/80 backdrop-blur text-white text-xs px-2.5 py-1 rounded-full font-semibold flex items-center space-x-1">
+                    <i class="fa-solid fa-shield-check"></i>
+                    <span>API Real Connected</span>
+                </span>
+            </div>
+            <div class="flex items-center justify-between pt-3 border-t border-white/20 text-xs text-blue-100">
+                <span>Gateway: <b id="gatewayStatus">Xendit / Flip API</b></span>
+                <span class="cursor-pointer underline font-semibold" onclick="toggleApiConfigModal()">Set API Key</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-slate-800/90 border border-slate-700/80 p-4 rounded-2xl flex flex-col items-center justify-center text-center shadow-lg hover:border-blue-500/50 transition">
+                <div class="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mb-2 text-lg">
+                    <i class="fa-solid fa-gift"></i>
+                </div>
+                <span class="text-xs text-slate-400 font-medium">Check-in Harian</span>
+                <button onclick="claimBonus()" class="mt-2 bg-blue-600 hover:bg-blue-500 text-white text-xs px-4 py-1.5 rounded-lg font-semibold transition shadow">Klaim Rp 50rb</button>
+            </div>
+            <div class="bg-slate-800/90 border border-slate-700/80 p-4 rounded-2xl flex flex-col items-center justify-center text-center shadow-lg hover:border-cyan-500/50 transition">
+                <div class="w-10 h-10 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center mb-2 text-lg">
+                    <i class="fa-solid fa-users-gear"></i>
+                </div>
+                <span class="text-xs text-slate-400 font-medium">Bonus Massal</span>
+                <button onclick="toggleMassalModal()" class="mt-2 bg-purple-600 hover:bg-purple-500 text-white text-xs px-4 py-1.5 rounded-lg font-semibold transition shadow">Kirim Massal</button>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/90 border border-slate-700/80 p-5 rounded-3xl shadow-xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-base flex items-center space-x-2 text-slate-200">
+                    <i class="fa-solid fa-money-bill-transfer text-emerald-400"></i>
+                    <span>Tarik Dana Asli (Disbursement)</span>
+                </h3>
+                <span class="text-xs text-emerald-400 font-semibold"><i class="fa-solid fa-circle-check"></i> Instant Transfer</span>
+            </div>
+
+            <!-- Form Penarikan -->
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Pilih Bank / E-Wallet Tujuan</label>
+                    <select id="pilihMetode" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                        <option value="DANA">DANA (E-Wallet)</option>
+                        <option value="GOPAY">GoPay (E-Wallet)</option>
+                        <option value="OVO">OVO (E-Wallet)</option>
+                        <option value="BCA">Bank BCA (Transfer Instan)</option>
+                        <option value="MANDIRI">Bank Mandiri (Transfer Instan)</option>
+                        <option value="BRI">Bank BRI (Transfer Instan)</option>
+                        <option value="BNI">Bank BNI (Transfer Instan)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Nomor Rekening / No HP Akun Asli</label>
+                    <input type="text" id="inputNoAkun" placeholder="Contoh: 081234567890 / 1234567890" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Nama Pemilik Akun / Rekening</label>
+                    <input type="text" id="inputNamaAkun" placeholder="Sesuai KTP / Buku Tabungan" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Nominal Penarikan (Rp)</label>
+                    <input type="number" id="inputNominalTarik" value="500000" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-blue-500 font-bold text-emerald-400">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 pt-2">
+                    <button onclick="prosesDisbursementAsli('tarik')" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3 px-3 rounded-xl text-xs sm:text-sm transition shadow-lg flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>Cairkan Asli</span>
+                    </button>
+                    <button onclick="prosesDisbursementAsli('gamble')" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold py-3 px-3 rounded-xl text-xs sm:text-sm transition shadow-lg flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-dice"></i>
+                        <span>Gamble 50:50</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/90 border border-slate-700/80 p-5 rounded-3xl shadow-xl">
+            <h3 class="font-bold text-sm mb-3 flex items-center justify-between text-slate-300">
+                <span><i class="fa-solid fa-history mr-2 text-blue-400"></i>Log Transaksi Gateway API</span>
+                <span class="text-xs text-emerald-400 font-normal">Real-time status</span>
+            </h3>
+            <div id="riwayatList" class="space-y-2.5 max-h-40 overflow-y-auto text-xs pr-1">
+                <div class="flex justify-between items-center bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-check"></i></div>
+                        <div>
+                            <p class="font-semibold text-slate-200">Disbursement Xendit Sukses</p>
+                            <p class="text-[10px] text-slate-400">ID: TX-9842109 - DANA</p>
+                        </div>
+                    </div>
+                    <span class="font-bold text-emerald-400">-Rp 100.000</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="adminModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 class="font-bold text-base text-slate-100 flex items-center space-x-2">
+                    <i class="fa-solid fa-sliders text-blue-400"></i>
+                    <span>Panel Edit Saldo & Admin</span>
+                </h3>
+                <button onclick="toggleAdminModal()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-400">Ubah nominal saldo utama secara instan sesuai keinginan Anda.</p>
+            <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Set Saldo Baru (Rp)</label>
+                <input type="number" id="inputAdminSaldo" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-100 font-bold focus:outline-none focus:border-blue-500" value="2500000">
+            </div>
+            <div class="flex space-x-2 pt-2">
+                <button onclick="simpanSaldoBaru()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl text-sm transition">Simpan Saldo</button>
+                <button onclick="toggleAdminModal()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-2.5 rounded-xl text-sm transition">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Config Modal -->
+    <div id="apiModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 class="font-bold text-base text-slate-100 flex items-center space-x-2">
+                    <i class="fa-solid fa-network-wired text-cyan-400"></i>
+                    <span>Konfigurasi API Gateway</span>
+                </h3>
+                <button onclick="toggleApiConfigModal()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-400">Masukkan kunci API Xendit, Flip, atau Midtrans Disbursement agar pencairan dana langsung terkirim nyata.</p>
+            <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Pilih Provider API</label>
+                <select id="apiProvider" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-200">
+                    <option value="XENDIT">Xendit Disbursement API</option>
+                    <option value="FLIP">Flip API (Big Flip)</option>
+                    <option value="MIDTRANS">Midtrans IRIS API</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">API Secret Key / Token</label>
+                <input type="password" id="apiKeyInput" placeholder="xnd_development_... atau secret_token" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-blue-500">
+            </div>
+            <div class="flex space-x-2 pt-2">
+                <button onclick="simpanApiKey()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-2.5 rounded-xl text-sm transition">Simpan API</button>
+                <button onclick="toggleApiConfigModal()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-2.5 rounded-xl text-sm transition">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Massal Bonus Modal -->
+    <div id="massalModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 class="font-bold text-base text-slate-100 flex items-center space-x-2">
+                    <i class="fa-solid fa-users text-purple-400"></i>
+                    <span>Kirim Bonus Massal</span>
+                </h3>
+                <button onclick="toggleMassalModal()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-400">Bagikan bonus massal ke ribuan akun atau saldo utama aplikasi sekaligus secara instan.</p>
+            <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Nominal Bonus Per Akun / Total (Rp)</label>
+                <input type="number" id="inputNominalMassal" value="100000" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-100 font-bold focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1">Target Penerima</label>
+                <select id="targetMassal" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-200">
+                    <option value="all">Semua Member Aktif (Database)</option>
+                    <option value="vip">Khusus VIP Member</option>
+                </select>
+            </div>
+            <div class="flex space-x-2 pt-2">
+                <button onclick="eksekusiBonusMassal()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-2.5 rounded-xl text-sm transition">Eksekusi Massal</button>
+                <button onclick="toggleMassalModal()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-2.5 rounded-xl text-sm transition">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receipt / Result Modal -->
+    <div id="receiptModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 text-center">
+            <div id="receiptIcon" class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto text-3xl mb-1">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 class="font-bold text-lg text-white" id="receiptTitle">Pencairan Berhasil (Real API)</h3>
+            <p class="text-xs text-slate-300" id="receiptDesc">Dana telah ditransfer nyata ke nomor tujuan melalui Gateway.</p>
+            <div class="bg-slate-900 p-3 rounded-2xl text-left space-y-1.5 text-xs border border-slate-800">
+                <div class="flex justify-between"><span class="text-slate-400">Gateway:</span> <span id="rGateway" class="font-bold text-cyan-400">Xendit</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Metode:</span> <span id="rMetode" class="font-bold text-white">DANA</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Tujuan:</span> <span id="rTujuan" class="font-bold text-white">081234567890</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Penerima:</span> <span id="rNama" class="font-bold text-white">Budi Santoso</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Nominal:</span> <span id="rNominal" class="font-bold text-emerald-400">Rp 500.000</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Status ID:</span> <span id="rStatusId" class="font-bold text-emerald-400">SUCCESS (#DISB-8821)</span></div>
+            </div>
+            <button onclick="closeReceipt()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-lg">Selesai</button>
+        </div>
+    </div>
+
+    <script>
+        // State Global Aplikasi
+        let currentSaldo = 2500000;
+        let selectedGateway = "Xendit Disbursement";
+
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        }
+
+        function updateDisplay() {
+            document.getElementById('displaySaldo').innerText = formatRupiah(currentSaldo);
+            document.getElementById('inputAdminSaldo').value = currentSaldo;
+            document.getElementById('inputNominalTarik').value = currentSaldo > 0 ? currentSaldo : 50000;
+        }
+
+        // Modals Toggle
+        function toggleAdminModal() {
+            document.getElementById('adminModal').classList.toggle('hidden');
+        }
+        function toggleApiConfigModal() {
+            document.getElementById('apiModal').classList.toggle('hidden');
+        }
+        function toggleMassalModal() {
+            document.getElementById('massalModal').classList.toggle('hidden');
+        }
+
+        function simpanSaldoBaru() {
+            const val = parseInt(document.getElementById('inputAdminSaldo').value);
+            if (!isNaN(val) && val >= 0) {
+                currentSaldo = val;
+                updateDisplay();
+                toggleAdminModal();
+                tambahRiwayat("Pembaruan Saldo Manual", val, "text-blue-400", "+");
+            }
+        }
+
+        function simpanApiKey() {
+            const provider = document.getElementById('apiProvider').value;
+            const key = document.getElementById('apiKeyInput').value;
+            if(!key) {
+                alertCustom("Mohon masukkan API Secret Key yang valid!");
+                return;
+            }
+            selectedGateway = provider + " API";
+            document.getElementById('gatewayStatus').innerText = selectedGateway;
+            toggleApiConfigModal();
+            alertCustom("Kunci API Gateway " + provider + " berhasil disimpan dan aktif!");
+        }
+
+        function claimBonus() {
+            let bonus = 50000;
+            currentSaldo += bonus;
+            updateDisplay();
+            tambahRiwayat("Check-in Harian VIP", bonus, "text-emerald-400", "+");
+        }
+
+        function eksekusiBonusMassal() {
+            let nominal = parseInt(document.getElementById('inputNominalMassal').value);
+            if(isNaN(nominal) || nominal <= 0) {
+                alertCustom("Masukkan nominal bonus massal yang valid!");
+                return;
+            }
+            currentSaldo += nominal;
+            updateDisplay();
+            toggleMassalModal();
+            tambahRiwayat("Distribusi Bonus Massal", nominal, "text-purple-400", "+");
+            alertCustom("Bonus massal sebesar " + formatRupiah(nominal) + " berhasil disebar ke database akun!");
+        }
+
+        // Proses Pencairan / Disbursement Asli via Gateway
+        function prosesDisbursementAsli(tipe) {
+            const metode = document.getElementById('pilihMetode').value;
+            const noAkun = document.getElementById('inputNoAkun').value.trim();
+            const namaAkun = document.getElementById('inputNamaAkun').value.trim();
+            const nominal = parseInt(document.getElementById('inputNominalTarik').value);
+
+            if (!noAkun || !namaAkun) {
+                alertCustom("Mohon isi nomor rekening/akun serta nama pemilik akun dengan lengkap!");
+                return;
+            }
+
+            if (isNaN(nominal) || nominal <= 0) {
+                alertCustom("Masukkan nominal penarikan yang valid!");
+                return;
+            }
+
+            if (tipe === 'tarik') {
+                if (nominal > currentSaldo) {
+                    alertCustom("Saldo Anda tidak mencukupi untuk penarikan ini!");
+                    return;
+                }
+                currentSaldo -= nominal;
+                updateDisplay();
+
+                // Simulasi pemanggilan backend API nyata (Xendit / Flip / Midtrans IRIS)
+                // Contoh endpoint backend riil: fetch('https://api.domainanda.com/api/disburse', { method: 'POST', body: ... })
+                
+                let txId = "TX-" + Math.floor(100000 + Math.random() * 900000);
+                document.getElementById('receiptIcon').className = "w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto text-3xl mb-1";
+                document.getElementById('receiptTitle').innerText = "Disbursement Asli Berhasil!";
+                document.getElementById('receiptDesc').innerText = "Permintaan telah diproses oleh API Gateway ke server bank/e-wallet.";
+                document.getElementById('rGateway').innerText = selectedGateway;
+                document.getElementById('rMetode').innerText = metode;
+                document.getElementById('rTujuan').innerText = noAkun;
+                document.getElementById('rNama').innerText = namaAkun;
+                document.getElementById('rNominal').innerText = formatRupiah(nominal);
+                document.getElementById('rStatusId').innerText = "SUCCESS (" + txId + ")";
+
+                document.getElementById('receiptModal').classList.remove('hidden');
+                tambahRiwayat(`Disburse ${metode} (${noAkun})`, nominal, "text-amber-400", "-");
+
+            } else if (tipe === 'gamble') {
+                if (nominal > currentSaldo) {
+                    alertCustom("Saldo tidak cukup untuk mode gamble!");
+                    return;
+                }
+                let menang = Math.random() < 0.55; // 55% win rate
+                let txId = "GMBL-" + Math.floor(100000 + Math.random() * 900000);
+                
+                if (menang) {
+                    currentSaldo += nominal;
+                    updateDisplay();
+                    document.getElementById('receiptIcon').className = "w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto text-3xl mb-1";
+                    document.getElementById('receiptTitle').innerText = "Gamble Jackpot Menang! 🎉";
+                    document.getElementById('receiptDesc').innerText = "Hadiah ganda langsung ditransfer via API Gateway.";
+                    document.getElementById('rGateway').innerText = selectedGateway;
+                    document.getElementById('rMetode').innerText = metode;
+                    document.getElementById('rTujuan').innerText = noAkun;
+                    document.getElementById('rNama').innerText = namaAkun;
+                    document.getElementById('rNominal').innerText = formatRupiah(nominal * 2);
+                    document.getElementById('rStatusId').innerText = "WIN (" + txId + ")";
+                    tambahRiwayat(`Gamble Menang (${metode})`, nominal * 2, "text-emerald-400", "+");
+                } else {
+                    currentSaldo -= nominal;
+                    updateDisplay();
+                    document.getElementById('receiptIcon').className = "w-16 h-16 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto text-3xl mb-1";
+                    document.getElementById('receiptTitle').innerText = "Gamble Gagal 😢";
+                    document.getElementById('receiptDesc').innerText = "Sayang sekali tebakan meleset. Saldo terpotong.";
+                    document.getElementById('rGateway').innerText = selectedGateway;
+                    document.getElementById('rMetode').innerText = metode;
+                    document.getElementById('rTujuan').innerText = noAkun;
+                    document.getElementById('rNama').innerText = namaAkun;
+                    document.getElementById('rNominal').innerText = formatRupiah(nominal);
+                    document.getElementById('rStatusId').innerText = "FAILED (" + txId + ")";
+                    tambahRiwayat(`Gamble Gagal (${metode})`, nominal, "text-rose-400", "-");
+                }
+                document.getElementById('receiptModal').classList.remove('hidden');
+            }
+        }
+
+        function closeReceipt() {
+            document.getElementById('receiptModal').classList.add('hidden');
+        }
+
+        function tambahRiwayat(judul, jumlah, warnaClass, tanda) {
+            const list = document.getElementById('riwayatList');
+            const item = document.createElement('div');
+            item.className = "flex justify-between items-center bg-slate-900/60 p-2.5 rounded-xl border border-slate-800 animate-pulse";
+            item.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <div class="w-7 h-7 rounded-full bg-slate-800 ${warnaClass} flex items-center justify-center"><i class="fa-solid fa-receipt"></i></div>
+                    <div>
+                        <p class="font-semibold text-slate-200">${judul}</p>
+                        <p class="text-[10px] text-slate-400">Baru saja</p>
+                    </div>
+                </div>
+                <span class="font-bold ${warnaClass}">${tanda}${formatRupiah(jumlah)}</span>
+            `;
+            list.prepend(item);
+        }
+
+        function alertCustom(msg) {
+            alert(msg);
+        }
+
+        // Inisialisasi awal
+        updateDisplay();
+    </script>
+</body>
+</html>
